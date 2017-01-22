@@ -82,9 +82,10 @@ public class AstNode {
         public <E> E accept(ExpressionVisitor<E> visitor) { return visitor.visitDefFunction(this); }
     }
 
-    public static class LambdaExpression extends Expression {
+    public static class LambdaExpression extends Expression implements Cloneable {
         private final List<String>             args;
         private final List<AstNode.Expression> body;
+        private Evaluator.Environment          parent;
         public LambdaExpression(List<String> args, List<AstNode.Expression> body) {
             this.args = args;
             this.body = body;
@@ -95,8 +96,24 @@ public class AstNode {
         public List<AstNode.Expression> body() {
             return body;
         }
+        public void setParent(Evaluator.Environment env) {
+            this.parent = env;
+        }
+        public Evaluator.Environment getParent() {
+            return this.parent;
+        }
 
         public <E> E accept(ExpressionVisitor<E> visitor) { return visitor.visitLambdaExpression(this); }
+
+        public LambdaExpression clone() {
+            LambdaExpression obj = null;
+            try {
+                obj = (LambdaExpression)super.clone();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            return obj;
+        }
     }
 
     public static class LetExpression extends Expression {

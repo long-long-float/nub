@@ -175,6 +175,8 @@ public class Evaluator implements AstNode.ExpressionVisitor<Object> {
 
     @Override
     public Object visitLambdaExpression(AstNode.LambdaExpression node) {
+        node = node.clone();
+        node.setParent(environment);
         return node;
     }
 
@@ -201,6 +203,7 @@ public class Evaluator implements AstNode.ExpressionVisitor<Object> {
     public Object visitFunctionCall(AstNode.FunctionCall node) {
         String fname = node.name().name();
         AstNode.DefFunction function = functions.get(fname);
+        Environment parent = globalEnvironment;
         if(function == null) {
             Object lambda_ = environment.find(fname);
             if(lambda_ == null) {
@@ -210,6 +213,7 @@ public class Evaluator implements AstNode.ExpressionVisitor<Object> {
                 throw new NubRuntimeException("function " + fname + " is not a function");
             }
             AstNode.LambdaExpression lambda = (AstNode.LambdaExpression)lambda_;
+            parent = lambda.getParent();
             function = new AstNode.DefFunction("<anonymous>", lambda.args(), lambda.body());
         }
         List<String> args = function.args();
@@ -223,7 +227,7 @@ public class Evaluator implements AstNode.ExpressionVisitor<Object> {
             for(AstNode.Expression e:node.params()) {
                 values.add(e.accept(this));
             }
-            environment = new Environment(globalEnvironment);
+            environment = new Environment(parent);
             for (int i = 0; i < args.size(); i++) {
                 environment.register(args.get(i), values.get(i));
             }
