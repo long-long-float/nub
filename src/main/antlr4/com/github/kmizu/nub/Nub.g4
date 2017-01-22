@@ -27,6 +27,10 @@ defFunction returns [AstNode.DefFunction e]
    : DEF n=IDENTIFIER LP ps=params RP b=block { $e = new AstNode.DefFunction($n.getText(), $ps.result, $b.e); }
    ;
 
+lambdaExpression returns [AstNode.LambdaExpression e]
+   : DEF LP ps=params RP b=block { $e = new AstNode.LambdaExpression($ps.result, $b.e); }
+   ;
+
 params returns [List<String> result]
    @init {
      List<String> ps = new ArrayList<String>();
@@ -71,7 +75,7 @@ assignment returns [AstNode.Expression e]
     : name=IDENTIFIER EQ x=expression {$e = new AstNode.AssignmentOperation($name.getText(), $x.e);}
     | v=logical {$e = $v.e;}
     ;
-    
+
 logical returns [AstNode.Expression e]
     : l=logical op='&&' r=conditional {$e = new AstNode.BinaryOperation($op.getText(), $l.e, $r.e);}
     | l=logical op='||' r=conditional {$e = new AstNode.BinaryOperation($op.getText(), $l.e, $r.e);}
@@ -110,7 +114,9 @@ primary returns [AstNode.Expression e]
     | '(' x=expression ')' {$e = $x.e;}
     | ifExpression {$e = $ifExpression.e;}
     | whileExpression {$e = $whileExpression.e;}
+    | lambdaExpression {$e = $lambdaExpression.e;}
     ;
+
 
 identifier returns [AstNode.Identifier e]
     : i=IDENTIFIER {$e = new AstNode.Identifier($i.getText());}

@@ -17,6 +17,7 @@ public class AstNode {
         E visitAssignmentOperation(AssignmentOperation node);
         E visitPrintlnExpression(PrintlnExpression node);
         E visitDefFunction(DefFunction node);
+        E visitLambdaExpression(LambdaExpression node);
         E visitFunctionCall(FunctionCall node);
         E visitReturn(Return node);
     }
@@ -79,6 +80,23 @@ public class AstNode {
         }
 
         public <E> E accept(ExpressionVisitor<E> visitor) { return visitor.visitDefFunction(this); }
+    }
+
+    public static class LambdaExpression extends Expression {
+        private final List<String>             args;
+        private final List<AstNode.Expression> body;
+        public LambdaExpression(List<String> args, List<AstNode.Expression> body) {
+            this.args = args;
+            this.body = body;
+        }
+        public List<String> args() {
+            return args;
+        }
+        public List<AstNode.Expression> body() {
+            return body;
+        }
+
+        public <E> E accept(ExpressionVisitor<E> visitor) { return visitor.visitLambdaExpression(this); }
     }
 
     public static class LetExpression extends Expression {

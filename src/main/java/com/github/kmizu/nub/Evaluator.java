@@ -174,6 +174,11 @@ public class Evaluator implements AstNode.ExpressionVisitor<Object> {
     }
 
     @Override
+    public Object visitLambdaExpression(AstNode.LambdaExpression node) {
+        return node;
+    }
+
+    @Override
     public Object visitIdentifier(AstNode.Identifier node) {
         Object ret = environment.find(node.name());
         if (ret == null)
@@ -194,13 +199,22 @@ public class Evaluator implements AstNode.ExpressionVisitor<Object> {
 
     @Override
     public Object visitFunctionCall(AstNode.FunctionCall node) {
-        AstNode.DefFunction function = functions.get(node.name().name());
+        String fname = node.name().name();
+        AstNode.DefFunction function = functions.get(fname);
         if(function == null) {
-            throw new NubRuntimeException("function " + node.name().name() + " is not defined");
+            Object lambda_ = environment.find(fname);
+            if(lambda_ == null) {
+                throw new NubRuntimeException("function " + fname + " is not defined");
+            }
+            if(!(lambda_ instanceof AstNode.LambdaExpression)) {
+                throw new NubRuntimeException("function " + fname + " is not a function");
+            }
+            AstNode.LambdaExpression lambda = (AstNode.LambdaExpression)lambda_;
+            function = new AstNode.DefFunction("<anonymous>", lambda.args(), lambda.body());
         }
         List<String> args = function.args();
         if(args.size() != node.params().size()) {
-            throw new NubRuntimeException("function " + node.name().name() + " arity mismatch! required length: " + args.size() + " actual length:" + node.params().size());
+            throw new NubRuntimeException("function " + fname + " arity mismatch! required length: " + args.size() + " actual length:" + node.params().size());
         }
         {
             Environment prevEnvironment = environment;
